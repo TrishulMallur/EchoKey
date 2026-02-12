@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --accent: #2563EB;
+      --accent-light: #DBEAFE;
+      --accent-dark: #1D4ED8;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --warning: #D97706;
+      --text: #1E293B;
+      --muted: #64748B;
+      --light: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      width: 420px;
+      min-height: 300px;
+      max-height: 560px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: #0F172A;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      color: #F8FAFC;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .header .badge {
+      font-size: 10px;
+      background: var(--accent);
+      color: #FFF;
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .toggle-area {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toggle-label {
+      color: var(--light);
+      font-size: 11px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: #475569;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+
+    .toggle.on {
+      background: var(--success);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #FFF;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle.on::after {
+      transform: translateX(16px);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab:hover {
+      color: var(--text);
+      background: #F1F5F9;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Search */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+
+    /* Snippet List */
+    .snippet-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .category-header {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 10px 14px 4px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .snippet-row {
+      display: flex;
+      align-items: center;
+      padding: 6px 14px;
+      gap: 8px;
+      border-bottom: 1px solid #F1F5F9;
+      cursor: default;
+      transition: background 0.1s;
+    }
+
+    .snippet-row:hover {
+      background: #F8FAFC;
+    }
+
+    .snippet-code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 70px;
+      background: var(--accent-light);
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .snippet-text {
+      font-size: 12px;
+      color: var(--text);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Tier indicators */
+    .tier-icon {
+      font-size: 11px;
+      flex-shrink: 0;
+      width: 16px;
+      text-align: center;
+    }
+
+    .snippet-row.managed .snippet-actions {
+      display: none;
+    }
+
+    .snippet-actions {
+      display: flex;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .snippet-row:hover .snippet-actions {
+      opacity: 1;
+    }
+
+    .icon-btn {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
+      background: #E2E8F0;
+    }
+
+    /* Bulk Operations */
+    .bulk-toggle {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent);
+      background: none;
+      border: 1px solid var(--accent);
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: auto;
+      transition: all 0.15s;
+    }
+
+    .bulk-toggle:hover {
+      background: var(--accent-light);
+    }
+
+    .bulk-toggle.active {
+      background: var(--accent);
+      color: #FFF;
+    }
+
+    .bulk-bar {
+      display: none;
+      padding: 6px 14px;
+      background: #EFF6FF;
+      border-top: 1px solid var(--accent);
+      font-size: 11px;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .bulk-bar.visible {
+      display: flex;
+    }
+
+    .bulk-count {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .bulk-link {
+      font-size: 10px;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--accent);
+      text-decoration: underline;
+      font-family: inherit;
+    }
+
+    .bulk-btn {
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .bulk-btn-danger {
+      background: var(--danger);
+      color: #FFF;
+    }
+
+    .bulk-btn-export {
+      background: var(--accent);
+      color: #FFF;
+      margin-left: 4px;
+    }
+
+    .snippet-row .bulk-check {
+      display: none;
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .bulk-mode .snippet-row .bulk-check {
+      display: block;
+    }
+
+    .bulk-mode .snippet-row.managed .bulk-check {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .icon-btn.delete:hover {
+      background: #FEE2E2;
+      color: var(--danger);
+    }
+
+    /* Add Form */
+    .add-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .add-panel.visible {
+      display: flex;
+    }
+
+    .add-panel-inner {
+      padding: 12px 14px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 65px;
+    }
+
+    .form-input {
+      flex: 1;
+      padding: 5px 8px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .form-input.mono {
+      font-family: 'Consolas', monospace;
+    }
+
+    .form-error {
+      font-size: 11px;
+      color: var(--danger);
+      display: none;
+    }
+
+    .form-error.visible {
+      display: block;
+    }
+
+    .form-warning {
+      font-size: 11px;
+      color: var(--warning);
+      display: none;
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      border-radius: 4px;
+      padding: 5px 8px;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .form-warning.visible {
+      display: block;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    .btn {
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #FFF;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn-cancel {
+      background: #E2E8F0;
+      color: var(--text);
+    }
+
+    .btn-cancel:hover {
+      background: #CBD5E1;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 6px 14px;
+      background: var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .footer-link {
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      background: none;
+      border: none;
+      font-size: 10px;
+      font-family: inherit;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 30px 14px;
+      text-align: center;
+      color: var(--light);
+      font-size: 12px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0F172A;
+      color: #FFF;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px 14px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .stats-panel.visible {
+      display: flex;
+    }
+
+    .stats-summary {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 2px;
+    }
+
+    .stats-section {
+      margin-top: 4px;
+    }
+
+    .stats-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .stat-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+
+    .stat-bar-code {
+      font-family: 'Consolas', monospace;
+      font-size: 10px;
+      color: var(--accent);
+      min-width: 72px;
+      text-align: right;
+    }
+
+    .stat-bar-track {
+      flex: 1;
+      height: 14px;
+      background: #F1F5F9;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .stat-bar-fill {
+      height: 100%;
+      background: var(--accent-light);
+      border-radius: 3px;
+      min-width: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .stat-bar-fill.top {
+      background: var(--accent);
+    }
+
+    .stat-bar-fill.bottom {
+      background: var(--warning);
+      opacity: 0.5;
+    }
+
+    .stat-bar-count {
+      font-size: 10px;
+      color: var(--muted);
+      min-width: 28px;
+    }
+
+    .stats-footer-actions {
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .stats-empty {
+      font-size: 11px;
+      color: var(--light);
+      padding: 8px 0;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>📋 EchoKey</h1>
+    <span class="badge" id="count">0</span>
+    <div class="toggle-area">
+      <span class="toggle-label" id="toggleLabel">ON</span>
+      <button class="toggle on" id="toggleBtn"></button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="snippets">Snippets</button>
+    <button class="tab" data-tab="add">+ Add New</button>
+    <button class="tab" data-tab="stats">&#128202; Stats</button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <input class="search-input" id="search" type="text" placeholder="Search shortcodes or comments..." style="flex:1;">
+    <button class="bulk-toggle" id="bulkToggle" title="Select multiple snippets">☑ Select</button>
+  </div>
+
+  <!-- Add Form (hidden by default) -->
+  <div class="add-panel" id="addPanel">
+    <div class="add-panel-inner">
+      <div class="form-row" style="margin-bottom:6px;">
+        <span class="form-label">Shortcode</span>
+        <input class="form-input mono" id="addCode" type="text" placeholder=";4bpcmt" maxlength="15">
+      </div>
+      <div class="form-row" style="margin-bottom:6px;">
+        <span class="form-label">Expands to</span>
+        <input class="form-input" id="addExpansion" type="text" placeholder="4B: Updated Postal Code using MT103">
+      </div>
+      <div class="form-error" id="addError"></div>
+      <div class="form-warning" id="addWarning"></div>
+      <div class="btn-row">
+        <button class="btn btn-cancel" id="addCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="addSaveBtn">Save Snippet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Snippet List -->
+  <div class="snippet-list" id="snippetList"></div>
+
+  <!-- Stats Panel (hidden by default) -->
+  <div class="stats-panel" id="statsPanel">
+    <div class="stats-summary">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotalExpansions">0</div>
+        <div class="stat-label">Total Expansions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTodayCount">0</div>
+        <div class="stat-label">Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statLastUsed">Never</div>
+        <div class="stat-label">Last Used</div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Top 5 Most Used</div>
+      <div id="statsTop5"></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Bottom 5 Least Used</div>
+      <div id="statsBottom5"></div>
+    </div>
+
+    <div class="stats-footer-actions">
+      <button class="btn btn-cancel" id="resetStatsBtn">Reset Stats</button>
+    </div>
+  </div>
+
+  <!-- Bulk Action Bar -->
+  <div class="bulk-bar" id="bulkBar">
+    <span class="bulk-count" id="bulkCount">0 selected</span>
+    <button class="bulk-link" id="bulkSelectAll">Select All</button>
+    <button class="bulk-link" id="bulkDeselectAll">Deselect</button>
+    <button class="bulk-btn bulk-btn-export" id="bulkExportBtn">Export</button>
+    <button class="bulk-btn bulk-btn-danger" id="bulkDeleteBtn">Delete</button>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span id="footerCount">0 snippets loaded</span>
+    <div class="footer-actions">
+      <button class="footer-link" id="exportBtn">Export</button>
+      <button class="footer-link" id="importBtn">Import</button>
+      <button class="footer-link" id="resetBtn">Reset Defaults</button>
+      <button class="footer-link" id="adminBtn" style="color:#F59E0B;">⚙ Admin</button>
+    </div>
+  </div>
+
+  <!-- Export Options (hidden by default) -->
+  <div class="add-panel" id="exportPanel">
+    <div class="add-panel-inner">
+      <div style="font-size:12px; font-weight:600; margin-bottom:6px;">Export Options</div>
+      <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;">
+        <input type="checkbox" id="exportIncludeManaged">
+        Include managed (default) snippets
+      </label>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn btn-cancel" id="exportCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="exportConfirmBtn">Export JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="importFile" accept=".json" style="display:none">
+
+  <script src="../shared/shared.js"></script>
+  <script src="popup.js"></script>
+</body>
+
+</html>
